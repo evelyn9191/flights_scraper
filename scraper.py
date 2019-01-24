@@ -18,12 +18,31 @@ class FlightsSpider(CrawlSpider):
         start_urls = []
 
         target_destinations = [
-            '&dstAirport=Faro+%5BFAO%5D&dstTypedText=faro',    # PRG -> FAO
-            '&dstAirport=Reykjavik+%28Keflavik%29+%5BKEF%5D',    # PRG -> KEF
-            '&dstAirport=Tromso+%5BTOS%5D&dstTypedText=tromso',    # PRG -> TOS
-            '&dstAirport=Dublin+%5BDUB%5D&dstTypedText=dublin'    # PRG -> DUB
+            # PRG -> FAO
+            '&srcTypedText=prg&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Faro+%5BFAO%5D&dstTypedText=faro',
+            # PRG -> KEF
+            '&srcTypedText=prg&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Reykjavik+%28Keflavik%29+%5BKEF%5D',
+            # PRG -> TOS
+            '&srcTypedText=prg&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Tromso+%5BTOS%5D&dstTypedText=tromso',
+            # PRG -> DUB
+            '&srcTypedText=prg&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Dublin+%5BDUB%5D&dstTypedText=dublin',
+            # PRG -> NCE
+            '&srcTypedText=prg&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Nice+%5BNCE%5D&dstTypedText=nice',
+            # FAO -> PRG
+            '&srcAirport=Faro+%5BFAO%5D&srcTypedText=fao&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
+            # KEF -> PRG
+            '&srcAirport=Reykjavik+%28Keflavik%29+%5BKEF%5D&srcTypedText=kef&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
+            # TOS -> PRG
+            '&srcAirport=Tromso+%5BTOS%5D&srcTypedText=tos&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
+            # DUB -> PRG
+            '&srcAirport=Dublin+%5BDUB%5D&srcTypedText=dub&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
+            # NCE -> PRG
+            '&srcAirport=Nice+%5BNCE%5D&srcTypedText=nce&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
+            # OPO -> PRG
+            '&srcAirport=Porto+%5BOPO%5D&srcTypedText=porto&srcFreeTypedText=&srcMC=&srcap3=LIS&srcFreeAirport=&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
+            # LIS -> PRG
+            '&srcAirport=Lisabon+%5BLIS%5D&srcTypedText=lis&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
             # PRG -> JAP not on Azair
-
         ]
 
         dates_range = [
