@@ -38,9 +38,6 @@ class FlightsSpider(CrawlSpider):
             # TOS -> PRG
             '&srcAirport=Tromso+%5BTOS%5D&srcTypedText=tos&srcFreeTypedText=&srcMC=&srcFreeAirport='
             '&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
-            # DUB -> PRG
-            '&srcAirport=Dublin+%5BDUB%5D&srcTypedText=dub&srcFreeTypedText=&srcMC=&srcFreeAirport='
-            '&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
             # NCE -> PRG
             '&srcAirport=Nice+%5BNCE%5D&srcTypedText=nce&srcFreeTypedText=&srcMC=&srcFreeAirport='
             '&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
