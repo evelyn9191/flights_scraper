@@ -1,4 +1,2 @@
 .idea
 .venv
-*.csv
-flights.db

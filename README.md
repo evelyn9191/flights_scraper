@@ -14,4 +14,4 @@ Nice to have:
 3a. Compares data with last year data and draws conclusions.
 
 ### Current state of the project
-As of 27th January 2019: points 1 and 2 finished.
+As of 27th January 2019: points 1 and 2 finished, working on 3.

@@ -1,11 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import sqlite3
 from datetime import datetime, timedelta
 
 from scrapy.spiders import CrawlSpider
 from scrapy.crawler import CrawlerProcess
 import pandas as pd
+
+from database import DB_CURSOR, import_to_database, create_database
 
 
 class FlightsSpider(CrawlSpider):
@@ -174,48 +175,9 @@ def edit_data(path_to_data):
     return output_file
 
 
-def add_to_database(path_to_data):
-    """Create database if it doesn't exist yet, append data from .csv file and return database path."""
-    con = sqlite3.connect('flights.db')
-    cur = con.cursor()
-    cur.execute('''CREATE TABLE IF NOT EXISTS Flights (
-                uid int,
-                date_of_departure numeric,
-                departure_airport text,
-                time_of_departure numeric,
-                arrival_airport text,
-                time_of_arrival numeric,
-                flight_duration text,
-                flight_fare int,
-                departure_airport_flight_1 text,
-                time_of_departure_flight_1 numeric,
-                arrival_airport_flight_1 text,
-                time_of_arrival_flight_1 numeric,
-                airlines_flight_1 text,
-                flight_fare_flight_1 int,
-                seats_for_lower_price_flight_1 int,
-                departure_airport_flight_2 text,
-                time_of_departure_flight_2 numeric,
-                arrival_airport_flight_2 text,
-                time_of_arrival_flight_2 numeric,
-                airlines_flight_2 text,
-                flight_fare_flight_2 int,
-                seats_for_lower_price_flight_2 int,
-                date_of_download numeric,
-                day_of_download text,
-                day_of_departure text)''')
-    con.commit()
-
-    scraped_data = pd.read_csv(path_to_data, sep='|')
-    scraped_data.to_sql('Flights', con, if_exists='append', index=False)
-    con.commit()
-
-    database = 'flights.db'
-
-    return database
-
-
 if __name__ == '__main__':
     path_to_csv = run_spider()
     edit_data(path_to_data=path_to_csv)
-    add_to_database(path_to_data=path_to_csv)
+    create_database()
+    import_to_database(path_to_data=path_to_csv)
+    day_of_purchase_chart()
