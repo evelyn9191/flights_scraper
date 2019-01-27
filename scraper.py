@@ -1,20 +1,22 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import sys
 import sqlite3
-import logging
 from datetime import datetime, timedelta
 
-from scrapy.spiders import CrawlSpider, Rule
-from scrapy.linkextractors import LinkExtractor
+from scrapy.spiders import CrawlSpider
+from scrapy.crawler import CrawlerProcess
+import pandas as pd
 
 
 class FlightsSpider(CrawlSpider):
+    """Create scraping spider."""
     name = 'flights_spider'
-    AUTOTHROTTLE_START_DELAY = 3
-    AUTOTHROTTLE_MAX_DELAY = 7
+    custom_settings = {
+        'DOWNLOAD_DELAY': 5,
+    }
 
-    def urls_to_scrape(self):
+    def urls_to_scrape():
+        """Make list with URLs to be scraped based on destinations and dates of flights."""
         start_urls = []
 
         target_destinations = [
@@ -24,30 +26,34 @@ class FlightsSpider(CrawlSpider):
             '&srcTypedText=prg&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Reykjavik+%28Keflavik%29+%5BKEF%5D',
             # PRG -> TOS
             '&srcTypedText=prg&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Tromso+%5BTOS%5D&dstTypedText=tromso',
-            # PRG -> DUB
-            '&srcTypedText=prg&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Dublin+%5BDUB%5D&dstTypedText=dublin',
             # PRG -> NCE
             '&srcTypedText=prg&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Nice+%5BNCE%5D&dstTypedText=nice',
             # FAO -> PRG
-            '&srcAirport=Faro+%5BFAO%5D&srcTypedText=fao&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
+            '&srcAirport=Faro+%5BFAO%5D&srcTypedText=fao&srcFreeTypedText=&srcMC=&srcFreeAirport='
+            '&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
             # KEF -> PRG
-            '&srcAirport=Reykjavik+%28Keflavik%29+%5BKEF%5D&srcTypedText=kef&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
+            '&srcAirport=Reykjavik+%28Keflavik%29+%5BKEF%5D&srcTypedText=kef&srcFreeTypedText=&srcMC=&srcFreeAirport='
+            '&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
             # TOS -> PRG
-            '&srcAirport=Tromso+%5BTOS%5D&srcTypedText=tos&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
+            '&srcAirport=Tromso+%5BTOS%5D&srcTypedText=tos&srcFreeTypedText=&srcMC=&srcFreeAirport='
+            '&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
             # DUB -> PRG
-            '&srcAirport=Dublin+%5BDUB%5D&srcTypedText=dub&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
+            '&srcAirport=Dublin+%5BDUB%5D&srcTypedText=dub&srcFreeTypedText=&srcMC=&srcFreeAirport='
+            '&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
             # NCE -> PRG
-            '&srcAirport=Nice+%5BNCE%5D&srcTypedText=nce&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
-            # OPO -> PRG
-            '&srcAirport=Porto+%5BOPO%5D&srcTypedText=porto&srcFreeTypedText=&srcMC=&srcap3=LIS&srcFreeAirport=&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
+            '&srcAirport=Nice+%5BNCE%5D&srcTypedText=nce&srcFreeTypedText=&srcMC=&srcFreeAirport='
+            '&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
             # LIS -> PRG
-            '&srcAirport=Lisabon+%5BLIS%5D&srcTypedText=lis&srcFreeTypedText=&srcMC=&srcFreeAirport=&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
-            # PRG -> JAP not on Azair
+            '&srcAirport=Lisabon+%5BLIS%5D&srcTypedText=lis&srcFreeTypedText=&srcMC=&srcFreeAirport='
+            '&dstAirport=Praha+%5BPRG%5D&dstTypedText=prg'
         ]
 
+        tomorrow = datetime.now() + timedelta(days=1)
+        timestamp = tomorrow.strftime("%-d.%-m.%Y")
+
         dates_range = [
-            '&dstFreeAirport=&depdate=25.1.2019&arrdate=31.5.2019',
-            '&dstFreeAirport=&depdate=1.6.2019&arrdate=31.10.2019'
+            '&dstFreeAirport=&depdate=%s&arrdate=30.6.2019' % timestamp,
+            '&dstFreeAirport=&depdate=1.7.2019&arrdate=31.10.2019'
         ]
 
         for destination in target_destinations:
@@ -72,88 +78,144 @@ class FlightsSpider(CrawlSpider):
 
     start_urls = urls_to_scrape()
 
-
-    present_timestamp = datetime.now().strftime("%d.%B.%Y %I:%M%p").split(' ')[0]
-    present_day = datetime.now().strftime("%A %d.%B.%Y.%I:%M%p").split(' ')[0]
-
-    logging.INFO('Processing' + response.url + '...')
-
-
-    def process_links(self):
-
     def parse(self, response):
+        """Define items to look for in scraped website."""
+
         SET_SELECTOR = '.result '
 
         for flight_info_box in response.css(SET_SELECTOR):
-            DEPT_AER_CODE = '.code ::text'   # '.code ::text' 2x
+            DEPT_AER_CODE = '.code ::text'
             ARR_AER_CODE = '/html[1]/body[1]/div[5]/div[1]/div[1]/p[1]/span[4]/span[1]/text()'
-            DEPT_DATE = '.date ::text'    # st\xa029.05.2019
+            DEPT_DATE = '.date ::text'
             DEPT_TIME = '.from ::text'
             AIRLINES = '.airline ::text'
-            ARR_TIME = '.to ::text'    # 20:55 Faro[mezera]
-            DURATION = '.durcha ::text'    # 6:50 h / 1 p5estup
-            WHOLE_PRICE = '.subPrice ::text'    # 1201 K4
+            ARR_TIME = '.to ::text'
+            DURATION = '.durcha ::text'
+            WHOLE_PRICE = '.subPrice ::text'
             PRICE_FOR_SEPARATE_FLIGHT = '.legPrice ::text'
-            SEATS_FOR_GIVEN_PRICE = '.icoSeatWrapper ::text'    # 6[mezery:       ]
+            SEATS_FOR_GIVEN_PRICE = '.icoSeatWrapper ::text'
 
             yield {
-                'date of departure': flight_info_box.css(DEPT_DATE).extract_first(),
-                'departure airport': flight_info_box.css(DEPT_AER_CODE).extract_first(),
-                'time of departure': flight_info_box.css(DEPT_TIME).extract_first(),
-                'arrival airport': flight_info_box.xpath(ARR_AER_CODE).extract_first(),
-                'time of arrival': flight_info_box.css(ARR_TIME).extract_first(),
-                'flight duration': flight_info_box.css(DURATION).extract_first(),
-                'flight fare': flight_info_box.css(WHOLE_PRICE).extract_first(),
+                'date_of_departure': flight_info_box.css(DEPT_DATE).extract_first(),
+                'departure_airport': flight_info_box.css(DEPT_AER_CODE).extract_first(),
+                'time_of_departure': flight_info_box.css(DEPT_TIME).extract_first(),
+                'arrival_airport': flight_info_box.xpath(ARR_AER_CODE).extract_first(),
+                'time_of_arrival': flight_info_box.css(ARR_TIME).extract_first(),
+                'flight_duration': flight_info_box.css(DURATION).extract_first(),
+                'flight_fare': flight_info_box.css(WHOLE_PRICE).extract_first(),
 
-                'departure airport (flight 1)': flight_info_box.css(DEPT_AER_CODE).extract()[2],
-                'time of departure (flight 1)': flight_info_box.css(DEPT_TIME).extract()[0], # 1
-                'arrival airport (flight 1)': flight_info_box.css(DEPT_AER_CODE).extract()[3],
-                'time of arrival (flight 1)': flight_info_box.css(ARR_TIME).extract()[2],
-                'airlines (flight 1)': flight_info_box.css(AIRLINES).extract_first,    # check
-                'flight fare (flight 1)': flight_info_box.css(PRICE_FOR_SEPARATE_FLIGHT).extract()[0],
-                'seats for lower price (flight 1)': flight_info_box.css(SEATS_FOR_GIVEN_PRICE).extract_first(),
+                'departure_airport_flight_1': flight_info_box.css(DEPT_AER_CODE).extract()[2],
+                'time_of_departure_flight_1': flight_info_box.css(DEPT_TIME).extract()[0],
+                'arrival_airport_flight_1': flight_info_box.css(DEPT_AER_CODE).extract()[3],
+                'time_of_arrival_flight_1': flight_info_box.css(ARR_TIME).extract()[2],
+                'airlines_flight_1': flight_info_box.css(AIRLINES).extract_first(),
+                'flight_fare_flight_1': flight_info_box.css(PRICE_FOR_SEPARATE_FLIGHT).extract()[0],
+                'seats_for_lower_price_flight_1': flight_info_box.css(SEATS_FOR_GIVEN_PRICE).extract_first(),
 
-                'departure airport (flight 2)': flight_info_box.css(DEPT_AER_CODE).extract()[3],
-                'time of departure (flight 2)': flight_info_box.css(DEPT_TIME).extract()[3],  # 1 PRG i u 2 PRG
-                'arrival airport (flight 2)': flight_info_box.xpath(ARR_AER_CODE).extract_first(),
-                'time of arrival (flight 2)': flight_info_box.css(ARR_TIME).extract_first(),
-                'airlines (flight 2)': flight_info_box.css(AIRLINES).extract()[1],    # check
-                'flight fare (flight 2)': flight_info_box.css(PRICE_FOR_SEPARATE_FLIGHT).extract()[1],
-                'seats for lower price (flight 2)': flight_info_box.css(SEATS_FOR_GIVEN_PRICE).extract()[1],
+                'departure_airport_flight_2': flight_info_box.css(DEPT_AER_CODE).extract()[3],
+                'time_of_departure_flight_2': flight_info_box.css(DEPT_TIME).extract()[3],
+                'arrival_airport_flight_2': flight_info_box.xpath(ARR_AER_CODE).extract_first(),
+                'time_of_arrival_flight_2': flight_info_box.css(ARR_TIME).extract_first(),
+                'airlines_flight_2': flight_info_box.css(AIRLINES).extract()[1],
+                'flight_fare_flight_2': flight_info_box.css(PRICE_FOR_SEPARATE_FLIGHT).extract()[1],
+                'seats_for_lower_price_flight_2': flight_info_box.css(SEATS_FOR_GIVEN_PRICE).extract()[1],
             }
 
-            # create a dictionary to store the scraped info
-            #scraped_info = {
-            #    'title': item[0],
-            #    'vote': item[1],
-            #    'created_at': item[2],
-            #    'comments': item[3],
-            #}
 
-    def create_database(self):
-        conn = sqlite3.connect('flights.db')
-        cur = conn.cursor()
-        cur.execute('CREATE TABLE Flights('
-                    'Date of download NUMERIC, '
-                    'Date of departure NUMERIC, '
-                    'Departure airport TEXT, '
-                    'Departure time NUMERIC, '
-                    'Arrival airport TEXT, '
-                    'Arrival time NUMERIC, '
-                    'Airlines TEXT'
-                    'Fare TEXT'
-                    'Currency TEXT'
-                    'Seats for lower price TEXT')
-        # cur.execute('INSERT INTO Flights (Date of departure,Departure airport,...) VALUES (a, 'c', ...)
-        cur.execute('INSERT INTO Flights VALUES('24.1.2019', 'druhe')
+def run_spider():
+    """Run FlightsSpider and give output in .csv format."""
+    timestamp = datetime.now().strftime("%d.%m.%Y")
+    csv_output_file = f'flights_{timestamp}.csv'
+    process = CrawlerProcess({
+        'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)',
+        'FEED_FORMAT': 'csv',
+        'FEED_URI': csv_output_file
+    })
+    process.crawl(FlightsSpider)
+    process.start()
+    return csv_output_file
 
-        cur.execute('SELECT * FROM Flights')
 
-        rows = cur.fetchall()
+def edit_data(path_to_data):
+    """Format data as needed and return .csv file."""
+    df = pd.read_csv(path_to_data, error_bad_lines=False)
 
-        for row in rows:
-            print(row)
+    df.index.name = 'uid'
+    df['date_of_download'] = datetime.now().strftime("%d.%m.%Y")
+    df['day_of_download'] = datetime.now().strftime("%A")
 
-        cur.close()
-        conn.commit()
-        conn.close()
+    dept = df['date_of_departure'].str.split("\s", n=1, expand=True)
+    df['day_of_departure'] = dept[0]
+    df['date_of_departure'] = dept[1]
+
+    arrival_columns = ['time_of_arrival', 'time_of_arrival_flight_1', 'time_of_arrival_flight_2']
+    for arrival_column in arrival_columns:
+        arrival = df[arrival_column].str.split('\s', n=1, expand=True)
+        df[arrival_column] = arrival[0]
+
+    duration = df['flight_duration'].str.split('\s', n=1, expand=True)
+    df['flight_duration'] = duration[0]
+
+    fare_columns = ['flight_fare', 'flight_fare_flight_1', 'flight_fare_flight_2']
+    for fare_column in fare_columns:
+        fare = df[fare_column].str.split('\s', n=1, expand=True)
+        df[fare_column] = fare[0]
+
+    seats_for_lower_price_columns = ['seats_for_lower_price_flight_1', 'seats_for_lower_price_flight_2']
+    for seats_column in seats_for_lower_price_columns:
+        seat = df[seats_column].str.replace('       ', '')
+        df[seats_column] = seat
+
+    clean_departure_time = df['time_of_departure_flight_2'].str.split('\s', n=2, expand=True)
+    df['time_of_departure_flight_2'] = clean_departure_time[1]
+
+    output_file = df.to_csv(path_to_data, sep='|', encoding='utf-8', index=True)
+
+    return output_file
+
+
+def add_to_database(path_to_data):
+    """Create database if it doesn't exist yet, append data from .csv file and return database path."""
+    con = sqlite3.connect('flights.db')
+    cur = con.cursor()
+    cur.execute('''CREATE TABLE IF NOT EXISTS Flights (
+                uid int,
+                date_of_departure numeric,
+                departure_airport text,
+                time_of_departure numeric,
+                arrival_airport text,
+                time_of_arrival numeric,
+                flight_duration text,
+                flight_fare int,
+                departure_airport_flight_1 text,
+                time_of_departure_flight_1 numeric,
+                arrival_airport_flight_1 text,
+                time_of_arrival_flight_1 numeric,
+                airlines_flight_1 text,
+                flight_fare_flight_1 int,
+                seats_for_lower_price_flight_1 int,
+                departure_airport_flight_2 text,
+                time_of_departure_flight_2 numeric,
+                arrival_airport_flight_2 text,
+                time_of_arrival_flight_2 numeric,
+                airlines_flight_2 text,
+                flight_fare_flight_2 int,
+                seats_for_lower_price_flight_2 int,
+                date_of_download numeric,
+                day_of_download text,
+                day_of_departure text)''')
+    con.commit()
+
+    scraped_data = pd.read_csv(path_to_data, sep='|')
+    scraped_data.to_sql('Flights', con, if_exists='append', index=False)
+    con.commit()
+
+    database = 'flights.db'
+
+    return database
+
+
+if __name__ == '__main__':
+    path_to_csv = run_spider()
+    edit_data(path_to_data=path_to_csv)
+    add_to_database(path_to_data=path_to_csv)
