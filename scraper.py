@@ -47,7 +47,7 @@ class FlightsSpider(CrawlSpider):
         ]
 
         tomorrow = datetime.now() + timedelta(days=1)
-        timestamp = tomorrow.strftime("%-d.%-m.%Y")
+        timestamp = tomorrow.strftime("%#d.%#m.%Y")
 
         dates_range = [
             '&dstFreeAirport=&depdate=%s&arrdate=30.6.2019' % timestamp,
@@ -177,4 +177,3 @@ if __name__ == '__main__':
     edit_data(path_to_data=path_to_csv)
     create_database()
     import_to_database(path_to_data=path_to_csv)
-    day_of_purchase_chart()
