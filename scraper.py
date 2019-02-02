@@ -222,13 +222,16 @@ def edit_data(path_to_data):
 
     # If both columns contain 'KEF', change arrival airport to PRG and airport name
     # where flights are changed to 'unknown'
-    df['arrival_airport_flight_1'] = np.where((df['departure_airport'] == 'KEF') & (df['arrival_airport'] == 'KEF'),
+    df['arrival_airport_flight_1'] = np.where((df['departure_airport'] == 'KEF')
+                                              & (df['arrival_airport'] == 'KEF'),
                                               'unknown', df['arrival_airport_flight_1'])
 
-    df['departure_airport_flight_2'] = np.where((df['departure_airport'] == 'KEF') & (df['arrival_airport'] == 'KEF'),
+    df['departure_airport_flight_2'] = np.where((df['departure_airport'] == 'KEF')
+                                                & (df['arrival_airport'] == 'KEF'),
                                                 'unknown', df['departure_airport_flight_2'])
 
-    df['arrival_airport'] = np.where((df['departure_airport'] == 'KEF') & (df['arrival_airport'] == 'KEF'),
+    df['arrival_airport'] = np.where((df['departure_airport'] == 'KEF')
+                                     & (df['arrival_airport'] == 'KEF'),
                                      'PRG', df['arrival_airport'])
 
     # Delete rows that contain header except for the main header

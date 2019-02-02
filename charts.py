@@ -9,7 +9,11 @@ from database import DB_CURSOR
 # Set time period that will be analyzed
 ANALYZED_PERIOD_START = '15.03.2019'
 ANALYZED_PERIOD_FINISH = '31.10.2019'
+
+# Define other variables
 TIMESTAMP = datetime.now().strftime('%#d.%#m.%#Y')
+WEEKDAYS = {'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
+            'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 7}
 
 
 def day_of_purchase_chart():
@@ -49,7 +53,6 @@ def day_of_departure_chart():
 
     rows = DB_CURSOR.fetchall()
 
-    WEEKDAYS = {'po': 1, 'út': 2, 'st': 3, 'čt': 4, 'pá': 5, 'so': 6, 'ne': 7}
     rows.sort(key=lambda x: WEEKDAYS[x[2]])
 
     day_of_departure = []
@@ -63,42 +66,78 @@ def day_of_departure_chart():
 
     bar_chart = pygal.Line(title='Average price of flight ticket '
                                  'for certain departure days (in CZK)',
-                          print_values=True)
+                           print_values=True)
     bar_chart.add('First flight average price', flight_fare_flight_1)
     bar_chart.add('Second flight average price', flight_fare_flight_2)
     bar_chart.x_labels = day_of_departure
     day_of_departure_final_chart = bar_chart.render_to_file(
         f'bar_chart_day_of_departure_line_{TIMESTAMP}.svg')
 
+    for index, value in enumerate(flight_fare_flight_1):
+        percentage_difference = round((100 * flight_fare_flight_2[index]) / value - 100, 1)
+        print(f'Percentage change for {day_of_departure[index]}: {percentage_difference}%')
+
     return day_of_departure_final_chart
 
 
 def airlines_avg_price_chart():
     """Chart about average prices of flight tickets based on airlines."""
-    DB_CURSOR.execute('SELECT ROUND(avg(flight_fare_flight_1), 2), airlines_flight_1, '
-                      'ROUND(avg(flight_fare_flight_2), 2), airlines_flight_2 '
+    DB_CURSOR.execute('SELECT ROUND(avg(flight_fare_flight_1), 2), airlines_flight_1 '
                       'FROM Flights GROUP BY airlines_flight_1')
-    rows = DB_CURSOR.fetchall()
+    flights_1_data = DB_CURSOR.fetchall()
+
+    DB_CURSOR.execute('SELECT ROUND(avg(flight_fare_flight_2), 2), airlines_flight_2 '
+                      'FROM Flights GROUP BY airlines_flight_2')
+    flights_2_data = DB_CURSOR.fetchall()
 
     flight_fare_flight_1 = []
     flight_fare_flight_2 = []
     airlines_flight_1 = []
     airlines_flight_2 = []
 
-    for row in rows:
+    for row in flights_1_data:
         flight_fare_flight_1.append(row[0])
         airlines_flight_1.append(row[1])
-        flight_fare_flight_2.append(row[2])
-        airlines_flight_2.append(row[3])
 
-    print(rows)
+    for row in flights_2_data:
+        flight_fare_flight_2.append(row[0])
+        airlines_flight_2.append(row[1])
 
+    # Adjust lists to contain all the airlines and add value 0 for each of the missing ones
+    for airline in airlines_flight_1:
+        if airline not in airlines_flight_2:
+            airlines_flight_2.append(airline)
+            flight_fare_flight_2.append(0)
+
+    for airline in airlines_flight_2:
+        if airline not in airlines_flight_1:
+            airlines_flight_1.append(airline)
+            flight_fare_flight_1.append(0)
+
+    # Make list of tuples with correct values for respective airlines
+    matched_data = []
+    for i, airline in enumerate(airlines_flight_1):
+        index_airline_flight_2 = airlines_flight_2.index(airline)
+        matched_data.append((airline, flight_fare_flight_1[i], flight_fare_flight_2[index_airline_flight_2]))
+    matched_data.sort(key=lambda x: x[0].upper())
+
+    # Split tuples to lists to provide data for Pygal
+    final_flight_fare_flight_1 = []
+    final_flight_fare_flight_2 = []
+    final_airlines = []
+
+    for row in matched_data:
+        final_airlines.append(row[0])
+        final_flight_fare_flight_1.append(row[1])
+        final_flight_fare_flight_2.append(row[2])
+
+    # Render chart
     bar_chart = pygal.Bar(title='Average price of flight ticket '
                                 'based on airlines (in CZK)',
-                          print_values=True)
-    bar_chart.add('First flight average price', flight_fare_flight_1)
-    bar_chart.add('Second flight average price', flight_fare_flight_2)
-    bar_chart.x_labels = airlines_flight_1    # TODO: need to show both airlines_flight_x (merge it)
+                          print_values=True, print_values_position='top', truncate_label=-1)
+    bar_chart.add('First flight average price', final_flight_fare_flight_1)
+    bar_chart.add('Second flight average price', final_flight_fare_flight_2)
+    bar_chart.x_labels = final_airlines
     airlines_avg_price_final_chart = bar_chart.render_to_file(
         f'bar_chart_airlines_avg_price_{TIMESTAMP}.svg')
 
@@ -172,7 +211,6 @@ def price_by_hours_chart():
         rows = DB_CURSOR.fetchall()
         print(rows)
 
-        WEEKDAYS = {'po': 1, 'út': 2, 'st': 3, 'čt': 4, 'pá': 5, 'so': 6, 'ne': 7}
         rows.sort(key=lambda x: WEEKDAYS[x[0]])
 
         day_of_departure = []
