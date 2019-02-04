@@ -8,7 +8,7 @@ from database import DB_CURSOR
 
 # Set time period that will be analyzed
 ANALYZED_PERIOD_START = '15.03.2019'
-ANALYZED_PERIOD_FINISH = '31.10.2019'
+ANALYZED_PERIOD_FINISH = '30.11.2019'
 
 # Define other variables
 TIMESTAMP = datetime.now().strftime('%#d.%#m.%#Y')
@@ -23,6 +23,8 @@ def day_of_purchase_chart():
                       'FROM Flights GROUP BY day_of_download')
 
     rows = DB_CURSOR.fetchall()
+
+    rows.sort(key=lambda x: WEEKDAYS[x[2]])
 
     day_of_download = []
     flight_fare_flight_1 = []

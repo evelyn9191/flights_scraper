@@ -59,7 +59,7 @@ class FlightsSpider(CrawlSpider):
 
         dates_range = [
             '&dstFreeAirport=&depdate=%s&arrdate=30.6.2019' % timestamp,
-            '&dstFreeAirport=&depdate=1.7.2019&arrdate=31.10.2019'
+            '&dstFreeAirport=&depdate=1.7.2019&arrdate=30.11.2019'
         ]
 
         for destination in target_destinations:
@@ -233,6 +233,10 @@ def edit_data(path_to_data):
     df['arrival_airport'] = np.where((df['departure_airport'] == 'KEF')
                                      & (df['arrival_airport'] == 'KEF'),
                                      'PRG', df['arrival_airport'])
+
+    # Merge Transavia France with Transavia into one airline
+    df['airlines_flight_2'] = np.where(df['airlines_flight_2'] == 'Transavia France',
+                                     'Transavia', df['airlines_flight_2'])
 
     # Delete rows that contain header except for the main header
     df = df[~df['departure_airport'].str.contains("departure_airport")]
