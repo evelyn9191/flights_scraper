@@ -166,8 +166,10 @@ def edit_data(path_to_data):
     # Convert Czech words to English
     weekdays = {'po': 'Monday', 'út': 'Tuesday', 'st': 'Wednesday',
                 'čt': 'Thursday', 'pá': 'Friday', 'so': 'Saturday', 'ne': 'Sunday'}
-    weekday_name = df['day_of_departure'].apply(lambda x: x.replace(x, weekdays[x]))
-    df['day_of_departure'] = weekday_name
+    df['day_of_departure'].apply(lambda x: x.replace(x, weekdays[x]))
+    # TODO: shortened from: (check if working)
+    #  weekday_name = df['day_of_departure'].apply(lambda x: x.replace(x, weekdays[x]))
+    #  df['day_of_departure'] = weekday_name
 
     # Split columns with incorrect formatting
     arrival_columns = ['time_of_arrival', 'time_of_arrival_flight_1',
@@ -198,11 +200,29 @@ def edit_data(path_to_data):
         airport_code = df[column_name].str[-3:]
         df[column_name] = airport_code
 
+    # Split columns with incorrect formatting
+    clean_departure_time = df['time_of_departure_flight_2'].str.split('\s', n=2, expand=True)
+    df['time_of_departure_flight_2'] = clean_departure_time[1]
+
+    # If both columns contain 'KEF', change arrival airport to PRG and airport name
+    # where flights are changed to 'unknown'
+    df['arrival_airport_flight_1'] = np.where((df['departure_airport'] == 'KEF')
+                                              & (df['arrival_airport'] == 'KEF'),
+                                              '', df['arrival_airport_flight_1'])
+
+    df['departure_airport_flight_2'] = np.where((df['departure_airport'] == 'KEF')
+                                                & (df['arrival_airport'] == 'KEF'),
+                                                '', df['departure_airport_flight_2'])
+
+    df['arrival_airport'] = np.where((df['departure_airport'] == 'KEF')
+                                     & (df['arrival_airport'] == 'KEF'),
+                                     'PRG', df['arrival_airport'])
+
     # Rewrite rows containing 'Reykjavik' word with estimated time of arrival
     # for the first flights to Reykjavik, based on set estimated duration of
     # 1 hour and 10 minutes.
     formatted_arrival_time = df.loc[:, 'time_of_departure_flight_1'].apply(
-        lambda x: datetime.strptime(x, '%H:%M'))
+        lambda x: datetime.strptime(x, '%H:%M'))  # TODO: ValueError: time data 'time_of_departure_flight_1' does not match format '%H:%M' - obsahuje uknown. Smazano
     estimated_arrival_time = formatted_arrival_time + timedelta(hours=1, minutes=10)
     wrong_data = df.loc[:, 'time_of_arrival_flight_1'].apply(lambda x: 'Reykjavik' in x)
     df['time_of_arrival_flight_1'] = np.where(
@@ -211,35 +231,18 @@ def edit_data(path_to_data):
         df['time_of_arrival_flight_1']
     )
 
-    # Split columns with incorrect formatting
-    clean_departure_time = df['time_of_departure_flight_2'].str.split('\s', n=2, expand=True)
-    df['time_of_departure_flight_2'] = clean_departure_time[1]
+    # Adjust formatting
+    df['airlines_flight_2'] = np.where(df['airlines_flight_2'] == 'Transavia France',
+                                     'Transavia', df['airlines_flight_2'])
+    df['time_of_departure'].apply(lambda x: datetime.strptime(x, '%H:%M'))    # TODO: ValueError: time data 'time_of_departure' does not match format '%H:%M'  - obsahuje uknown. Smazano
+
+    # Delete rows that contain header except for the main header
+    df = df[~df['departure_airport'].str.contains("departure_airport")]
 
     # Remove unneeded columns for flights without change (case of Czech Airlines flights)
     for value in df['flight_fare']:
         if value in df['flight_fare_flight_1']:
             df['departure_airport_flight_2':].remove()
-
-    # If both columns contain 'KEF', change arrival airport to PRG and airport name
-    # where flights are changed to 'unknown'
-    df['arrival_airport_flight_1'] = np.where((df['departure_airport'] == 'KEF')
-                                              & (df['arrival_airport'] == 'KEF'),
-                                              'unknown', df['arrival_airport_flight_1'])
-
-    df['departure_airport_flight_2'] = np.where((df['departure_airport'] == 'KEF')
-                                                & (df['arrival_airport'] == 'KEF'),
-                                                'unknown', df['departure_airport_flight_2'])
-
-    df['arrival_airport'] = np.where((df['departure_airport'] == 'KEF')
-                                     & (df['arrival_airport'] == 'KEF'),
-                                     'PRG', df['arrival_airport'])
-
-    # Merge Transavia France with Transavia into one airline
-    df['airlines_flight_2'] = np.where(df['airlines_flight_2'] == 'Transavia France',
-                                     'Transavia', df['airlines_flight_2'])
-
-    # Delete rows that contain header except for the main header
-    df = df[~df['departure_airport'].str.contains("departure_airport")]
 
     # Save edited file
     df.to_csv(path_to_data, sep='|', encoding='utf-8', index=True)
