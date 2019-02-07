@@ -166,10 +166,8 @@ def edit_data(path_to_data):
     # Convert Czech words to English
     weekdays = {'po': 'Monday', 'út': 'Tuesday', 'st': 'Wednesday',
                 'čt': 'Thursday', 'pá': 'Friday', 'so': 'Saturday', 'ne': 'Sunday'}
-    df['day_of_departure'].apply(lambda x: x.replace(x, weekdays[x]))
-    # TODO: shortened from: (check if working)
-    #  weekday_name = df['day_of_departure'].apply(lambda x: x.replace(x, weekdays[x]))
-    #  df['day_of_departure'] = weekday_name
+    weekday_name = df['day_of_departure'].apply(lambda x: x.replace(x, weekdays[x]))
+    df['day_of_departure'] = weekday_name
 
     # Split columns with incorrect formatting
     arrival_columns = ['time_of_arrival', 'time_of_arrival_flight_1',
@@ -222,7 +220,7 @@ def edit_data(path_to_data):
     # for the first flights to Reykjavik, based on set estimated duration of
     # 1 hour and 10 minutes.
     formatted_arrival_time = df.loc[:, 'time_of_departure_flight_1'].apply(
-        lambda x: datetime.strptime(x, '%H:%M'))  # TODO: ValueError: time data 'time_of_departure_flight_1' does not match format '%H:%M' - obsahuje uknown. Smazano
+        lambda x: datetime.strptime(x, '%H:%M'))
     estimated_arrival_time = formatted_arrival_time + timedelta(hours=1, minutes=10)
     wrong_data = df.loc[:, 'time_of_arrival_flight_1'].apply(lambda x: 'Reykjavik' in x)
     df['time_of_arrival_flight_1'] = np.where(
@@ -234,7 +232,7 @@ def edit_data(path_to_data):
     # Adjust formatting
     df['airlines_flight_2'] = np.where(df['airlines_flight_2'] == 'Transavia France',
                                      'Transavia', df['airlines_flight_2'])
-    df['time_of_departure'].apply(lambda x: datetime.strptime(x, '%H:%M'))    # TODO: ValueError: time data 'time_of_departure' does not match format '%H:%M'  - obsahuje uknown. Smazano
+    df['time_of_departure'].apply(lambda x: datetime.strptime(x, '%H:%M'))
 
     # Delete rows that contain header except for the main header
     df = df[~df['departure_airport'].str.contains("departure_airport")]

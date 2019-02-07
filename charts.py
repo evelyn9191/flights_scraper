@@ -3,13 +3,10 @@
 from datetime import datetime
 import pygal
 
-from database import DB_CURSOR
+import pandas as pd
 
-# Set time period that will be analyzed
-ANALYZED_PERIOD_START = '15.03.2019'
-ANALYZED_PERIOD_FINISH = '30.11.2019'
+from database import DB_CURSOR, DB_CONNECTION
 
-# Define other variables
 TIMESTAMP = datetime.now().strftime('%#d-%#m-%#Y')
 WEEKDAYS = {'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
             'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 7}
@@ -214,17 +211,17 @@ def daily_price_chart():
 
         bar_chart = pygal.Bar(title=f'Prices of flights {destination} -> PRG '
                                     f'by date of departure (in CZK)',
-                              print_values=False)
+                              print_values=False, show_x_labels=False)
         bar_chart.add('Flight fare', flight_fare)
         bar_chart.x_labels = date_of_departure
         bar_chart.render_to_file(f'daily_price_{destination}_PRG_{TIMESTAMP}.svg')
 
 
-def price_by_hours_chart():
-    """Chart about average prices of flight tickets based on daily time of departure."""
+def price_change_chart():
+    """Chart about price changes caused by approaching departure date."""
     arrival_destinations = ['FAO', 'KEF', 'NCE', 'TOS']
     departure_destinations = ['LIS', 'FAO', 'KEF', 'NCE', 'TOS']
-    dates_to_compare_prices = ['1.2.2019', '05.02.2019', '01.03.2019', '01.04.2019', '01.05.2019',
+    dates_to_compare_prices = ['10.02.2019', '01.03.2019', '01.04.2019', '01.05.2019',
                                '01.06.2019', '01.07.2019', '20.07.2019']
 
     relevant_dates = []
@@ -264,10 +261,9 @@ def price_by_hours_chart():
                                 show_x_labels=False)
 
         for position in range(0, len(all_flight_fares)):
-            line_chart.add(f'Flight fares by {relevant_dates[position]}', all_flight_fares[position]) #[{'value': all_flight_fares[position]}])
-            # line_chart.add(f'Flight fares by {relevant_dates[position]}', all_flight_fares[position])
-            line_chart.x_labels = all_departure_times[position]    # Departure times are always the same
-        line_chart.y_labels = all_flight_fares[0]    # Pick one list for y labels is enough
+            line_chart.add(f'Flight fares by {relevant_dates[position]}', all_flight_fares[position])
+            line_chart.x_labels = all_departure_times[position]
+        line_chart.y_labels = all_flight_fares[0]
         line_chart.render_to_file(f'price_by_departure_time_PRG_{destination}_{TIMESTAMP}.svg')
 
     for destination in departure_destinations:
@@ -302,56 +298,120 @@ def price_by_hours_chart():
                                 show_x_labels=False)
 
         for position in range(0, len(all_flight_fares)):
-            line_chart.add(f'Flight fares by {relevant_dates[position]}', all_flight_fares[position]) #[{'value': all_flight_fares[position]}])
-            # line_chart.add(f'Flight fares by {relevant_dates[position]}', all_flight_fares[position])
-            line_chart.x_labels = all_departure_times[position]    # Departure times are always the same
-        line_chart.y_labels = all_flight_fares[0]    # Pick one list for y labels is enough
+            line_chart.add(f'Flight fares by {relevant_dates[position]}', all_flight_fares[position])
+            line_chart.x_labels = all_departure_times[position]
+        line_chart.y_labels = all_flight_fares[0]
         line_chart.render_to_file(f'price_by_departure_time_{destination}_PRG_{TIMESTAMP}.svg')
 
 
-def price_change_chart():
-    """Chart about price change based on approaching date of departure."""
-    # TODO: did not start working on this one yet
+def prices_by_departure_time_chart():
+    """Chart about average prices of flight tickets based on time of departure."""
     arrival_destinations = ['FAO', 'KEF', 'NCE', 'TOS']
-    # PRG -> FAO 20.5.
-    # PRG -> KEF 21.9.
-    # PRG -> NCE 25.5.
-    # PRG -> TOS 25.8.
-    # departure_destinations = ['LIS']
+    departure_destinations = ['LIS', 'FAO', 'KEF', 'NCE', 'TOS']
+    arrival_monitored_dates = {'FAO': '20.5.2019', 'KEF': '21.09.2019',
+                               'NCE': '25.05.2019', 'TOS': '25.08.2019'}
+    departure_monitored_dates = {'LIS': '24.07.2019', 'FAO': '30.09.2019', 'KEF': '30.09.2019',
+                                 'NCE': '22.07.2019', 'TOS': '18.09.2019'}
 
     for destination in arrival_destinations:
-        DB_CURSOR.execute("""SELECT day_of_departure, flight_fare_flight_1, flight_fare_flight_2, 
-                              time_of_departure_flight_1, time_of_departure_flight_2 FROM Flights 
-                              WHERE arrival_airport = ? GROUP BY day_of_departure""", (destination,))
+        DB_CURSOR.execute("""SELECT flight_fare, time_of_departure 
+                          FROM Flights WHERE arrival_airport = ? AND date_of_departure = ?
+                          GROUP BY time_of_departure""", (destination, arrival_monitored_dates[destination]))
         rows = DB_CURSOR.fetchall()
-        print(rows)
 
-        rows.sort(key=lambda x: WEEKDAYS[x[0]])
+        rows.sort(key=lambda x: x[1])
 
-        day_of_departure = []
-        flight_fare_flight_1 = []
-        flight_fare_flight_2 = []
-        time_of_departure_flight_1 = []
-        time_of_departure_flight_2 = []
+        flight_fare = []
+        time_of_departure = []
 
         for row in rows:
-            day_of_departure.append(row[0])
-            flight_fare_flight_1.append(row[1])
-            flight_fare_flight_2.append(row[2])
-            time_of_departure_flight_1.append(row[3])
-            time_of_departure_flight_2.append(row[4])
+            flight_fare.append(row[0])
+            time_of_departure.append(row[1])
 
-        line_chart = pygal.Line(title=f'Prices of flights PRG -> {destination} '
-        f'by departure time as of 27th January 2019 (in CZK)',
-                                print_values=False)
-        line_chart.add('Day of departure', day_of_departure)
-        line_chart.add('Flight fare of the first flight', flight_fare_flight_1)
-        line_chart.add('Flight fare of the second flight', flight_fare_flight_2)
-        line_chart.x_labels = time_of_departure_flight_1, time_of_departure_flight_2
-        line_chart.render_to_file(f'daily_price_PRG_{destination}_{TIMESTAMP}.svg')
+        if len(time_of_departure) > 1:
+            bar_chart = pygal.Bar(title=f'Prices of flights PRG -> {destination} '
+            f'by departure time (in CZK)',
+                                    print_values=False, x_title='Time of departure')
+            bar_chart.add('Flight fare', flight_fare)
+            bar_chart.x_labels = time_of_departure
+            bar_chart.render_to_file(f'daily_price_PRG_{destination}_{TIMESTAMP}.svg')
+
+    for destination in departure_destinations:
+        DB_CURSOR.execute("""SELECT flight_fare, time_of_departure 
+                          FROM Flights WHERE departure_airport = ? AND date_of_departure = ?
+                          GROUP BY time_of_departure""", (destination, departure_monitored_dates[destination]))
+        rows = DB_CURSOR.fetchall()
+
+        rows.sort(key=lambda x: x[1])
+
+        flight_fare = []
+        time_of_departure = []
+
+        for row in rows:
+            flight_fare.append(row[0])
+            time_of_departure.append(row[1])
+
+        if len(time_of_departure) > 1:
+            bar_chart = pygal.Bar(title=f'Prices of flights {destination} -> PRG '
+                                        f'by departure time (in CZK)',
+                                  print_values=False, x_title='Time of departure')
+            bar_chart.add('Flight fare', flight_fare)
+            bar_chart.x_labels = time_of_departure
+            bar_chart.render_to_file(f'daily_price_{destination}_PRG_{TIMESTAMP}.svg')
 
 
-# TODO: seats for lower price correlations (true or not, what change will come afterwards)
+def cheap_seats_chart():
+    """Chart about change of price based on cheap seats tickets purchase."""
+    arrival_destinations = ['FAO', 'KEF', 'NCE']
+    departure_destinations = ['LIS', 'FAO', 'KEF', 'NCE']
+    arrival_monitored_dates = {'FAO': '02.04.2019', 'KEF': '02.04.2019',
+                               'NCE': '15.03.2019'}
+    departure_monitored_dates = {'LIS': '02.04.2019', 'FAO': '01.04.2019',
+                                 'KEF': '02.05.2019', 'NCE': '01.04.2019'}
+
+    for destination in arrival_destinations:
+        select_query = f"""SELECT date_of_download, date_of_departure, time_of_departure, 
+                        flight_fare_flight_2, seats_for_lower_price_flight_2 
+                        FROM Flights WHERE date_of_departure='{arrival_monitored_dates[destination]}'
+                        AND arrival_airport='{destination}' 
+                        ORDER BY time_of_departure ASC"""
+        df = pd.read_sql_query(select_query, DB_CONNECTION)
+
+        df['date_of_download'].apply(lambda x: datetime.strptime(x, '%d.%m.%Y'))
+        df['date_of_departure'].apply(lambda x: datetime.strptime(x, '%d.%m.%Y'))
+
+        # Slight workaround - it wasn't working when formatted using regular ways
+        df['seats_for_lower_price_flight_2'].fillna(0, inplace=True)
+        no_nan_df = df[~df['seats_for_lower_price_flight_2'].isnull()]
+        df['seats_for_lower_price_flight_2'] = no_nan_df['seats_for_lower_price_flight_2'].astype(int)
+        df['seats_for_lower_price_flight_2'].mask(df['seats_for_lower_price_flight_2'] == 0, '', inplace=True)
+
+        # TODO: fix working of this part
+        df.groupby('time_of_departure')
+        df['group_number'] = df.groupby('time_of_departure').ngroup()
+        df['group_number'] = df['group_number'].apply(lambda x: x % 2)
+
+        def highlight_values():
+            df.loc[1, :] = 'background-color: green'
+            df.loc[df['group_number'] == 1, :] = 'background-color: red'
+            return df
+
+        df.style.applymap(highlight_values)
+        print(df.head(8))
+
+        df.to_html(f'cheaper_seats_PRG_{destination}_table.html')
+
+    for destination in departure_destinations:
+        select_query = f"""SELECT date_of_download, date_of_departure, time_of_departure, 
+                        flight_fare_flight_2, seats_for_lower_price_flight_2 
+                        FROM Flights WHERE date_of_departure='{departure_monitored_dates[destination]}'
+                        AND departure_airport='{destination}' 
+                        ORDER BY time_of_departure ASC"""
+        df = pd.read_sql_query(select_query, DB_CONNECTION, coerce_float=False,
+                               parse_dates={'date_of_download': '%d.%m.%Y'})
+        df.to_html(f'cheaper_seats_{destination}_PRG_table.html')
+
+# TODO: delete the database and start over
 
 
 def create_charts():
@@ -359,4 +419,6 @@ def create_charts():
     day_of_departure_chart()
     airlines_avg_price_chart()
     daily_price_chart()
-    price_by_hours_chart()    # TODO: run on certain dates only
+    price_change_chart()    # TODO: run on certain dates only
+    prices_by_departure_time_chart()
+    cheap_seats_chart()
