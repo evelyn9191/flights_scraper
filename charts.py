@@ -411,14 +411,12 @@ def cheap_seats_chart():
                                parse_dates={'date_of_download': '%d.%m.%Y'})
         df.to_html(f'cheaper_seats_{destination}_PRG_table.html')
 
-# TODO: delete the database and start over
-
 
 def create_charts():
     day_of_purchase_chart()
     day_of_departure_chart()
     airlines_avg_price_chart()
     daily_price_chart()
-    price_change_chart()    # TODO: run on certain dates only
+    price_change_chart()    # TODO: run on certain dates only. line_chart.y_labels = all_flight_fares[0] IndexError: list index out of range
     prices_by_departure_time_chart()
     cheap_seats_chart()

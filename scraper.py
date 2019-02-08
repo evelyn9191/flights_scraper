@@ -203,7 +203,7 @@ def edit_data(path_to_data):
     df['time_of_departure_flight_2'] = clean_departure_time[1]
 
     # If both columns contain 'KEF', change arrival airport to PRG and airport name
-    # where flights are changed to 'unknown'
+    # where flights are changed to empty value
     df['arrival_airport_flight_1'] = np.where((df['departure_airport'] == 'KEF')
                                               & (df['arrival_airport'] == 'KEF'),
                                               '', df['arrival_airport_flight_1'])
