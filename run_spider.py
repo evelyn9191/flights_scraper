@@ -21,6 +21,6 @@ if export_command == 'y':
     print('Charts successfully created.')
 elif export_command == 'n':
     print('Program will now quit.')
-while export_command != 'y' or export_command != 'n':
+else:
     print('Didn\'t understand your answer.')
     export_command = input('Please answer again: ')
