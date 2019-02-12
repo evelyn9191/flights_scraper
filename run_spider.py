@@ -15,12 +15,11 @@ import_to_database(path_to_data=formatted_output)
 os.rename(formatted_output, f'imported_files/{formatted_output}')
 
 export_command = input('Would you like to export charts? [y/n] ')
-# TODO: set place where to export charts
+while export_command != 'y' and export_command != 'n':
+    print('Didn\'t understand your answer.')
+    export_command = input('Please answer again: ')
 if export_command == 'y':
     create_charts()
     print('Charts successfully created.')
 elif export_command == 'n':
     print('Program will now quit.')
-else:
-    print('Didn\'t understand your answer.')
-    export_command = input('Please answer again: ')
