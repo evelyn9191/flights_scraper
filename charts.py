@@ -41,6 +41,18 @@ def day_of_purchase_chart():
     day_of_purchase_final_chart = bar_chart.render_to_file(
         f'exported_charts/{SAVING_DIR}/day_of_purchase_{TIMESTAMP}.svg')
 
+    best_day = sorted(rows, key=lambda x: (x[0] + x[1]))
+
+    print(f'The best days to buy tickets are:\n'
+          f'1. {best_day[0][2]}\n'
+          f'2. {best_day[1][2]}\n'
+          f'3. {best_day[2][2]}\n'
+          f'4. {best_day[3][2]}\n'
+          f'5. {best_day[4][2]}\n'
+          f'6. {best_day[5][2]}\n'
+          f'7. {best_day[6][2]}\n'
+          )
+
     return day_of_purchase_final_chart
 
 
@@ -53,7 +65,6 @@ def day_of_departure_chart():
     rows = DB_CURSOR.fetchall()
 
     rows.sort(key=lambda x: WEEKDAYS[x[2]])
-    print(rows)
 
     day_of_departure = []
     flight_fare_flight_1 = []
@@ -77,26 +88,16 @@ def day_of_departure_chart():
         percentage_difference = round((100 * flight_fare_flight_2[index]) / value - 100, 1)
         print(f'Percentage change for {day_of_departure[index]}: {percentage_difference}%')
 
-    flight_1_asc = sorted(rows, key=lambda x: x[0])
-    flight_2_asc = sorted(rows, key=lambda x: x[1])
+    best_day = sorted(rows, key=lambda x: (x[0] + x[1]))
 
-    print(f'The best days to buy tickets for the first flight are:\n'
-          f'1. {flight_1_asc[0][2]}\n'
-          f'2. {flight_1_asc[1][2]}\n'
-          f'3. {flight_1_asc[2][2]}\n'
-          f'4. {flight_1_asc[3][2]}\n'
-          f'5. {flight_1_asc[4][2]}\n'
-          f'6. {flight_1_asc[5][2]}\n'
-          f'7. {flight_1_asc[6][2]}\n'
-          )
-    print('The best days to buy tickets for the second flight are:\n'
-          f'1. {flight_2_asc[0][2]}\n'
-          f'2. {flight_2_asc[1][2]}\n'
-          f'3. {flight_2_asc[2][2]}\n'
-          f'4. {flight_2_asc[3][2]}\n'
-          f'5. {flight_2_asc[4][2]}\n'
-          f'6. {flight_2_asc[5][2]}\n'
-          f'7. {flight_2_asc[6][2]}\n'
+    print(f'The best days for flight departure are:\n'
+          f'1. {best_day[0][2]}\n'
+          f'2. {best_day[1][2]}\n'
+          f'3. {best_day[2][2]}\n'
+          f'4. {best_day[3][2]}\n'
+          f'5. {best_day[4][2]}\n'
+          f'6. {best_day[5][2]}\n'
+          f'7. {best_day[6][2]}\n'
           )
 
     return day_of_departure_final_chart
@@ -401,16 +402,21 @@ def cheap_seats_chart():
 
         # TODO: fix working of this part
         df.groupby('time_of_departure')
+        #print(df.head(10))
         df['group_number'] = df.groupby('time_of_departure').ngroup()
         df['group_number'] = df['group_number'].apply(lambda x: x % 2)
 
         def highlight_values():
-            df.loc[df['group_number'] == 0, :] = 'background-color: green'
-            df.loc[df['group_number'] == 1, :] = 'background-color: red'
-            return df
+            if df.loc['group_number'] == 0:
+                print('yes')
+                colour = 'green'
+            else:
+                print('no')
+                colour = 'red'
+            return 'background-color: %s' % colour
 
         df.style.applymap(highlight_values)
-        print(df.head(8))
+        #print(df.head(8))
 
         df.to_html(f'exported_charts/{SAVING_DIR}/cheaper_seats_PRG_{destination}_table.html')
 
