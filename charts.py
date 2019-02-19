@@ -446,3 +446,8 @@ def create_charts():
 
     prices_by_departure_time_chart()
     cheap_seats_chart()
+
+
+if __name__ == "__main___":
+    create_charts()
+    print('Charts successfully created.')
