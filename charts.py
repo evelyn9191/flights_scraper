@@ -157,6 +157,7 @@ def airlines_avg_price_chart():
     # Render chart
     bar_chart = pygal.Bar(title='Average price of flight ticket '
                                 'based on airlines (in CZK)',
+                          width=1500,
                           print_values=True, print_values_position='top')
     bar_chart.add('First flight average price', final_flight_fare_flight_1)
     bar_chart.add('Second flight average price', final_flight_fare_flight_2)
