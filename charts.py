@@ -7,7 +7,7 @@ import pandas as pd
 
 from database import DB_CURSOR, DB_CONNECTION
 
-TIMESTAMP = datetime.now().strftime('%#d-%#m-%#Y')
+TIMESTAMP = datetime.now().strftime('%d-%m-%Y')
 SAVING_DIR = datetime.now().strftime('%B_%Y')
 WEEKDAYS = {'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
             'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 7}
