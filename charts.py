@@ -391,34 +391,6 @@ def cheap_seats_chart():
                         AND arrival_airport='{destination}' 
                         ORDER BY time_of_departure ASC"""
         df = pd.read_sql_query(select_query, DB_CONNECTION)
-
-        df['date_of_download'].apply(lambda x: datetime.strptime(x, '%d.%m.%Y'))
-        df['date_of_departure'].apply(lambda x: datetime.strptime(x, '%d.%m.%Y'))
-
-        # Slight workaround - it wasn't working when formatted using regular ways
-        df['seats_for_lower_price_flight_2'].fillna(0, inplace=True)
-        no_nan_df = df[~df['seats_for_lower_price_flight_2'].isnull()]
-        df['seats_for_lower_price_flight_2'] = no_nan_df['seats_for_lower_price_flight_2'].astype(int)
-        df['seats_for_lower_price_flight_2'].mask(df['seats_for_lower_price_flight_2'] == 0, '', inplace=True)
-
-        # TODO: fix working of this part
-        df.groupby('time_of_departure')
-        #print(df.head(10))
-        df['group_number'] = df.groupby('time_of_departure').ngroup()
-        df['group_number'] = df['group_number'].apply(lambda x: x % 2)
-
-        def highlight_values():
-            if df.loc['group_number'] == 0:
-                print('yes')
-                colour = 'green'
-            else:
-                print('no')
-                colour = 'red'
-            return 'background-color: %s' % colour
-
-        df.style.applymap(highlight_values)
-        #print(df.head(8))
-
         df.to_html(f'exported_charts/{SAVING_DIR}/cheaper_seats_PRG_{destination}_table.html')
 
     for destination in departure_destinations:
