@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import os
+from datetime import datetime
 
 from scraper import run_spider, edit_data
 from database import create_database, import_to_database
@@ -14,12 +15,13 @@ if os.path.exists('flights.db') is False:
 import_to_database(path_to_data=formatted_output)
 os.rename(formatted_output, f'imported_files/{formatted_output}')
 
-export_command = input('Would you like to export charts? [y/n] ')
-while export_command != 'y' and export_command != 'n':
-    print('Didn\'t understand your answer.')
-    export_command = input('Please answer again: ')
-if export_command == 'y':
-    create_charts()
-    print('Charts successfully created.')
-elif export_command == 'n':
-    print('Program will now quit.')
+dates_to_run_spider = ['01.03.2019', '15.03.2019', '01.04.2019', '15.04.2019', '01.05.2019',
+                       '15.05.2019', '01.06.2019', '15.06.2019', '01.07.2019', '20.07.2019']
+TIMESTAMP = datetime.now().strftime('%d-%m-%Y')
+
+for date in dates_to_run_spider:
+    date = datetime.strptime(date, '%d.%m.%Y').strftime('%d-%m-%Y')
+    if date == TIMESTAMP:
+        create_charts()
+
+exit()
