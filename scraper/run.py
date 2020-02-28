@@ -3,7 +3,7 @@
 import os
 from datetime import datetime
 
-from scraper.scraper import run_spider, edit_data
+from scraper.scrape_website import run_spider, edit_data
 from scraper.database import create_database, import_to_database
 from scraper.charts import create_charts
 
