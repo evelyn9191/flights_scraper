@@ -8,7 +8,6 @@ DB_CURSOR = DB_CONNECTION.cursor()
 
 
 def create_database():
-    """Create database if it doesn't exist yet."""
     DB_CONNECTION.execute('''CREATE TABLE IF NOT EXISTS Flights (
                 uid int,
                 date_of_departure numeric,
@@ -39,7 +38,6 @@ def create_database():
 
 
 def import_to_database(path_to_data):
-    """Import data from .csv file to database."""
     scraped_data = pd.read_csv(path_to_data, sep='|')
     scraped_data.to_sql('Flights', DB_CONNECTION, if_exists='append', index=False)
     DB_CONNECTION.commit()
