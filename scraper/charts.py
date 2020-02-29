@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from datetime import datetime
+from pathlib import Path
+
 import pygal
 
 import pandas as pd
@@ -11,6 +13,9 @@ TIMESTAMP = datetime.now().strftime('%d-%m-%Y')
 SAVING_DIR = datetime.now().strftime('%B_%Y')
 WEEKDAYS = {'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
             'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 7}
+
+ROOT = Path(__file__).absolute().parents[1]
+CHARTS_DIR = ROOT / "exported_charts" / SAVING_DIR
 
 
 def day_of_purchase_chart():
@@ -194,8 +199,7 @@ def daily_price_chart():
                               width=1500, print_values=False, show_x_labels=False)
         bar_chart.add('Flight fare', flight_fare)
         bar_chart.x_labels = date_of_departure
-        bar_chart.render_to_file(f'../exported_charts/{SAVING_DIR}/'
-                                 f'daily_price_PRG_{destination}_{TIMESTAMP}.svg')
+        bar_chart.render_to_file(CHARTS_DIR / f'daily_price_PRG_{destination}_{TIMESTAMP}.svg')
 
     for destination in departure_destinations:
         DB_CURSOR.execute("""SELECT ROUND(flight_fare, 2), date_of_departure '
@@ -218,8 +222,7 @@ def daily_price_chart():
                               width=1500, print_values=False, show_x_labels=False)
         bar_chart.add('Flight fare', flight_fare)
         bar_chart.x_labels = date_of_departure
-        bar_chart.render_to_file(f'../exported_charts/{SAVING_DIR}/'
-                                 f'daily_price_{destination}_PRG_{TIMESTAMP}.svg')
+        bar_chart.render_to_file(CHARTS_DIR / f'daily_price_{destination}_PRG_{TIMESTAMP}.svg')
 
 
 def price_change_chart(dates_to_compare_prices):
@@ -268,8 +271,7 @@ def price_change_chart(dates_to_compare_prices):
             line_chart.x_labels = all_departure_times[position]
         try:
             line_chart.y_labels = all_flight_fares[0]
-            line_chart.render_to_file(f'../exported_charts/{SAVING_DIR}/'
-                                      f'price_by_departure_time_PRG_{destination}_{TIMESTAMP}.svg')
+            line_chart.render_to_file(CHARTS_DIR / f'price_by_departure_time_PRG_{destination}_{TIMESTAMP}.svg')
         except IndexError:
             print(f'Chart about price changes caused by approaching departure date for flight '
                   f'PRG -> {destination} wasn\'t exported.')
@@ -310,7 +312,7 @@ def price_change_chart(dates_to_compare_prices):
             line_chart.x_labels = all_departure_times[position]
         try:
             line_chart.y_labels = all_flight_fares[0]
-            line_chart.render_to_file(f'../exported_charts/{SAVING_DIR}/'
+            line_chart.render_to_file(CHARTS_DIR / 
                                       f'price_by_departure_time_{destination}_PRG_{TIMESTAMP}.svg')
         except IndexError:
             print(f'Chart about price changes caused by approaching departure date for flight ' 
@@ -347,8 +349,7 @@ def prices_by_departure_time_chart():
                                     print_values=False, x_title='Time of departure')
             bar_chart.add('Flight fare', flight_fare)
             bar_chart.x_labels = time_of_departure
-            bar_chart.render_to_file(f'../exported_charts/{SAVING_DIR}/'
-                                     f'daily_price_PRG_{destination}_{TIMESTAMP}.svg')
+            bar_chart.render_to_file(CHARTS_DIR / f'daily_price_PRG_{destination}_{TIMESTAMP}.svg')
 
     for destination in departure_destinations:
         DB_CURSOR.execute("""SELECT flight_fare, time_of_departure 
@@ -371,8 +372,7 @@ def prices_by_departure_time_chart():
                                   print_values=False, x_title='Time of departure')
             bar_chart.add('Flight fare', flight_fare)
             bar_chart.x_labels = time_of_departure
-            bar_chart.render_to_file(f'../exported_charts/{SAVING_DIR}/'
-                                     f'daily_price_{destination}_PRG_{TIMESTAMP}.svg')
+            bar_chart.render_to_file(CHARTS_DIR / f'daily_price_{destination}_PRG_{TIMESTAMP}.svg')
 
 
 def cheap_seats_chart():
