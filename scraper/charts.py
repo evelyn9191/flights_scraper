@@ -15,7 +15,7 @@ WEEKDAYS = {'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
             'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 7}
 
 ROOT = Path(__file__).absolute().parents[1]
-CHARTS_DIR = ROOT / "exported_charts" / SAVING_DIR
+CHARTS_DIR = ROOT / "charts" / SAVING_DIR
 
 
 def day_of_purchase_chart():
@@ -44,7 +44,7 @@ def day_of_purchase_chart():
     bar_chart.add('Second flight average price', flight_fare_flight_2)
     bar_chart.x_labels = day_of_download
     day_of_purchase_final_chart = bar_chart.render_to_file(
-        f'../exported_charts/{SAVING_DIR}/day_of_purchase_{TIMESTAMP}.svg')
+        f'../charts/{SAVING_DIR}/day_of_purchase_{TIMESTAMP}.svg')
 
     best_day = sorted(rows, key=lambda x: (x[0] + x[1]))
 
@@ -87,7 +87,7 @@ def day_of_departure_chart():
     bar_chart.add('Second flight average price', flight_fare_flight_2)
     bar_chart.x_labels = day_of_departure
     day_of_departure_final_chart = bar_chart.render_to_file(
-        f'../exported_charts/{SAVING_DIR}/day_of_departure_line_{TIMESTAMP}.svg')
+        f'../charts/{SAVING_DIR}/day_of_departure_line_{TIMESTAMP}.svg')
 
     for index, value in enumerate(flight_fare_flight_1):
         percentage_difference = round((100 * flight_fare_flight_2[index]) / value - 100, 1)
@@ -168,7 +168,7 @@ def airlines_avg_price_chart():
     bar_chart.add('Second flight average price', final_flight_fare_flight_2)
     bar_chart.x_labels = final_airlines
     airlines_avg_price_final_chart = bar_chart.render_to_file(
-        f'../exported_charts/{SAVING_DIR}/airlines_avg_price_{TIMESTAMP}.svg')
+        f'../charts/{SAVING_DIR}/airlines_avg_price_{TIMESTAMP}.svg')
 
     return airlines_avg_price_final_chart
 
@@ -391,7 +391,7 @@ def cheap_seats_chart():
                         AND arrival_airport='{destination}' 
                         ORDER BY time_of_departure ASC"""
         df = pd.read_sql_query(select_query, DB_CONNECTION)
-        df.to_html(f'../exported_charts/{SAVING_DIR}/cheaper_seats_PRG_{destination}_table.html')
+        df.to_html(f'../charts/{SAVING_DIR}/cheaper_seats_PRG_{destination}_table.html')
 
     for destination in departure_destinations:
         select_query = f"""SELECT date_of_download, date_of_departure, time_of_departure, 
@@ -401,7 +401,7 @@ def cheap_seats_chart():
                         ORDER BY time_of_departure ASC"""
         df = pd.read_sql_query(select_query, DB_CONNECTION, coerce_float=False,
                                parse_dates={'date_of_download': '%d.%m.%Y'})
-        df.to_html(f'../exported_charts/{SAVING_DIR}/cheaper_seats_{destination}_PRG_table.html')
+        df.to_html(f'../charts/{SAVING_DIR}/cheaper_seats_{destination}_PRG_table.html')
 
 
 def create_charts():

@@ -16,7 +16,7 @@ def scrape_flights():
         create_database()
     import_to_database(path_to_data=formatted_output)
 
-    imported_files_path = ROOT / "imported_files"
+    imported_files_path = ROOT / "flights_data"
     os.rename(formatted_output, imported_files_path / formatted_output)
 
     dates_to_run_spider = ['01.03.2019', '15.03.2019', '01.04.2019', '15.04.2019', '01.05.2019',
